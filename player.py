@@ -18,30 +18,28 @@ class Player(pygame.sprite.Sprite):
     self.image = self.animations["idle"][self.frame]
     self.size = 64
     self.image_x_offset = 13
-    self.body = pygame.Rect(*pos, self.size - (self.image_x_offset * 2), self.size)
+    self.image_y_offset = 13
+    self.body = pygame.Rect(*pos, self.size - (self.image_x_offset * 2), self.size - self.image_y_offset)
     self.direction = 1
 
-    self.move_keys = {pygame.K_a: -1, # left
-                      pygame.K_d: 1,  # right
-                      }
+    self.run_keys = {pygame.K_a: -1, pygame.K_d: 1}
     self.run_speed = 0
-    self.run_accel = 0.15
-    self.run_decel = 0.75
+    self.run_accel = 0.07
+    self.run_decel = 0.8
     self.run_min_speed = 0.8
-    self.run_max_speed = 23
+    self.run_max_speed = 28
 
     self.jump_key = pygame.K_SPACE
-    self.jump_cooldown = 20
     self.jump_timer = 0
     self.jump_speed = 0
-    self.jump_accel = 0.2
+    self.jump_accel = 0.15
     self.jump_apex = 5
-    self.jump_power = 125
+    self.jump_power = 150
     
     self.fall_start_speed = 3
     self.fall_speed = self.fall_start_speed * 1
-    self.fall_accel = 1.15
-    self.fall_max_speed = 22
+    self.fall_accel = 1.13
+    self.fall_max_speed = 20
     self.grounded = False
     self.falling = True
 
@@ -49,7 +47,7 @@ class Player(pygame.sprite.Sprite):
 
     # run inputs
     run_current_speed = self.run_speed * 1
-    for key, direction in self.move_keys.items():
+    for key, direction in self.run_keys.items():
       if keys_pressed[key]:
         self.direction = direction
         self.run_speed += (self.run_max_speed - abs(run_current_speed)) * self.run_accel * self.direction
@@ -60,39 +58,43 @@ class Player(pygame.sprite.Sprite):
       if keys_pressed[self.jump_key]:
         self.grounded = False
         self.jump_speed = self.jump_power * 1
-        self.jump_timer += self.jump_cooldown
 
-  def horizontal_collide(self, terrain):
+  def horizontal_collide(self, world):
 
-    for obstacle in terrain:
-      if self.body.colliderect(obstacle.body):
-        if self.run_speed < 0: # left
-          self.body.left = obstacle.body.right
-        elif self.run_speed > 0: # right
-          self.body.right = obstacle.body.left
+    for cell in world.cells:
+      if cell.exists:
+        if self.body.colliderect(cell.body):
+          if self.run_speed < 0: # left
+            self.body.left = cell.body.right
+            self.run_speed = 0
+          elif self.run_speed > 0: # right
+            self.body.right = cell.body.left
+            self.run_speed = 0
 
-  def vertical_collide(self, terrain):
+  def vertical_collide(self, world):
 
-    for obstacle in terrain:
-      if self.body.colliderect(obstacle.body):
-        if self.grounded or self.falling:
-          self.body.bottom = obstacle.body.top
-          return "top"
-        elif not self.grounded:
-          self.body.top = obstacle.body.bottom
-          return "bottom"
+    for cell in world.cells:
+      if cell.exists:
+        if self.body.colliderect(cell.body):
+          if self.grounded or self.falling:
+            self.body.bottom = cell.body.top
+            return "top"
+          elif not self.grounded:
+            self.body.top = cell.body.bottom
+            self.jump_timer = 20
+            return "bottom"
 
-  def move(self, terrain):
+  def move(self, world):
 
     # running
     if abs(self.run_speed) > self.run_min_speed:
       self.body.x += self.run_speed
-      self.horizontal_collide(terrain)  
+      self.horizontal_collide(world)  
     self.run_speed *= self.run_decel
 
     # fell off platform
     self.body.y += 1
-    if self.grounded and self.vertical_collide(terrain) != "top":
+    if self.grounded and self.vertical_collide(world) != "top":
       self.falling = True
       self.grounded = False
       self.fall_speed = self.fall_start_speed * 1
@@ -102,7 +104,7 @@ class Player(pygame.sprite.Sprite):
       self.body.y -= self.jump_speed * self.jump_accel
       self.jump_speed *= 1 - self.jump_accel
       
-      if self.jump_speed < self.jump_apex or self.vertical_collide(terrain) == "bottom":
+      if self.jump_speed < self.jump_apex or self.vertical_collide(world) == "bottom":
         self.falling = True
         self.fall_speed = self.fall_start_speed * 1
 
@@ -112,7 +114,7 @@ class Player(pygame.sprite.Sprite):
       self.fall_speed *= self.fall_accel
       if self.fall_speed > self.fall_max_speed:
         self.fall_speed = self.fall_max_speed * 1
-      if self.vertical_collide(terrain) == "top":
+      if self.vertical_collide(world) == "top":
         self.falling = False
         self.grounded = True
 
@@ -132,4 +134,4 @@ class Player(pygame.sprite.Sprite):
 
   def draw(self, screen):
 
-    screen.blit(self.image, (self.body.x - self.image_x_offset, self.body.y))
+    screen.blit(self.image, (self.body.x - self.image_x_offset, self.body.y - self.image_y_offset))

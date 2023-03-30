@@ -6,6 +6,6 @@ def import_frames(path):
 
   for _, _, files in os.walk(path):
     for frame in files:
-      frames.append(pygame.image.load(os.path.join(path, frame)))
+      frames.append(pygame.image.load(os.path.join(path, frame)).convert_alpha())
 
   return frames

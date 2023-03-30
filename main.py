@@ -2,34 +2,18 @@ import pygame
 import sys
 
 from player import Player
-from terrain import Terrain
+from world import World
 
 WIDTH, HEIGHT = 1920, 1080
 
 def main():
+  print("Welcome to Shadeshaper! Use A and D to move, and SPACE to jump")
+
   screen = pygame.display.set_mode((WIDTH, HEIGHT))
   pygame.display.set_caption('Shadeshaper')
 
-  player = Player((1000, 500))
-  terrain = [
-            # borders
-            Terrain(0,     0,      WIDTH, 1),
-            Terrain(0,     HEIGHT, WIDTH, 1),
-            Terrain(0,     0,      1,     HEIGHT),
-            Terrain(WIDTH, 0,      1,     HEIGHT),
-            # test platforms
-            Terrain(100, 1010, 200, 20),
-            Terrain(300, 950, 200, 20),
-            Terrain(500, 890, 200, 20),
-            Terrain(100, 890, 200, 20),
-            Terrain(700, 830, 200, 20),
-            Terrain(900, 770, 200, 20),
-            Terrain(1100, 710, 200, 20),
-            Terrain(1300, 650, 200, 20),
-            Terrain(1500, 590, 200, 20),
-            Terrain(1700, 530, 200, 20),
-            Terrain(400, 1030, 300, 50),
-            ]
+  player = Player((WIDTH / 2, HEIGHT / 2))
+  world = World(WIDTH, HEIGHT, 30)
   clock = pygame.time.Clock()
 
   while True:
@@ -37,26 +21,28 @@ def main():
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         pygame.quit()
-        sys.exit()
+        sys.exit("\nThank you for playing!")
+      elif event.type == pygame.MOUSEBUTTONDOWN:
+        if event.button == 1:
+          world.toggle_cell(*pygame.mouse.get_pos())
 
     # inputs
     keys_pressed = pygame.key.get_pressed()
     player.check_inputs(keys_pressed)
 
     # movement
-    player.move(terrain)
+    player.move(world)
     player.animate()
 
     # update frame
-    screen.fill("white")
+    screen.fill("grey")
+    if pygame.mouse.get_pressed()[2]:
+      pygame.draw.polygon(screen, "white", world.calculate_light(pygame.mouse.get_pos()))
+    world.draw(screen)
     player.draw(screen)
-    for obstacle in terrain:
-      obstacle.draw(screen)
     pygame.display.update()
 
-    # update clock at 60 frames per second
+    # update clock
     clock.tick(60)
 
-if __name__ == "__main__":
-  print("Welcome to Shadeshaper")
-  main()
+if __name__ == "__main__": main()
