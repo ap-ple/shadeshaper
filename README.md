@@ -1,2 +1,2 @@
 # Shadeshaper
-Python 3.11 (or higher) and the `Pygame` library are required to run the game. Visit https://www.python.org/downloads/ and use `pip install pygame` to install them, respectively. Once installed, run `main.pyw` or `run_game.py`. Use `A` and `D` to move left and right (respectively), and `SPACE` to jump.
+Python 3.11 (or higher) and the `Pygame` library are required to run the game. Visit the [Python downloads](https://www.python.org/downloads/ "Download Python") page to install Python, and use the command `pip install pygame` to install Pygame. Once installed, run `main.pyw` or `run_game.py` (there is also a `playground.py` where you can create terrain). Use `A` and `D` to move left and right (respectively), and `SPACE` to jump.
