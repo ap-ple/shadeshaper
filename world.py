@@ -18,21 +18,25 @@ class Edge:
 
 class Cell:
 
-  def __init__(self, size, pos):
+  def __init__(self, size, position):
 
     self.exists = False
     self.edges = [False] * 4
     self.edge_id = [0] * 4
+    self.goal = False
 
-    self.body = pygame.Rect(*pos, size, size)
+    self.body = pygame.Rect(*position, size, size)
     self.image = pygame.Surface((size, size))
-    self.image.fill('black')
 
-    self.pos = pos
+    self.position = position
 
   def draw(self, screen):
 
-    screen.blit(self.image, self.pos)
+    if self.goal:
+      self.image.fill('chartreuse4')
+    else:
+      self.image.fill('black')
+    screen.blit(self.image, self.position)
 
 class World:
 
@@ -41,6 +45,8 @@ class World:
     # make sure both screen_width and screen_height are divisible by block_size
     self.width = screen_width // block_size
     self.height = screen_height // block_size
+    self.block_size = block_size
+    self.player_position = (screen_width // 2, screen_height // 2)
 
     self.cells = []
 
@@ -48,24 +54,26 @@ class World:
       for x in range(self.width):
        self.cells.append(Cell(block_size, (x * block_size, y * block_size)))
 
-    self.block_size = block_size
+    for x in range(self.width):
+      self.cells[x].exists = True
+      self.cells[self.width + x].exists = True
+      self.cells[(self.height - 2) * self.width + x].exists = True
+      self.cells[(self.height - 1) * self.width + x].exists = True
+    for y in range(self.height):
+      self.cells[y * self.width].exists = True
+      self.cells[y * self.width + 1].exists = True
+      self.cells[y * self.width + (self.width - 2)].exists = True
+      self.cells[y * self.width + (self.width - 1)].exists = True
 
-    if len(tile_map) == 0:
-      for x in range(self.width):
-        self.cells[x].exists = True
-        self.cells[self.width + x].exists = True
-        self.cells[(self.height - 2) * self.width + x].exists = True
-        self.cells[(self.height - 1) * self.width + x].exists = True
-      for y in range(self.height):
-        self.cells[y * self.width].exists = True
-        self.cells[y * self.width + 1].exists = True
-        self.cells[y * self.width + (self.width - 2)].exists = True
-        self.cells[y * self.width + (self.width - 1)].exists = True
-    else:
-      for column, row in enumerate(tile_map):
-        for cell, tile in enumerate(row):
-          if tile == "#":
-            self.cells[column * self.width + cell].exists = True
+    for y, row in enumerate(tile_map):
+      for x, tile in enumerate(row):
+        if tile in "GP#":
+          cell = self.cells[y * self.width + x]
+          cell.exists = True
+          if tile == "G":
+            cell.goal = True
+          elif tile == "P":
+            self.player_position = (cell.position[X], cell.position[Y] - 50)
 
     self.set_edges()
 
@@ -208,10 +216,22 @@ class World:
     light.sort(key=lambda x: x[1])
     return tuple(point for point, _ in light)
 
-  def toggle_cell(self, x, y):
+  def toggle_cell(self, position, goal=False):
 
-    cell = self.cells[(y // self.block_size) * self.width + (x // self.block_size)]
-    cell.exists = not cell.exists
+    cell = self.cells[(position[Y] // self.block_size) * self.width + (position[X] // self.block_size)]
+    if goal:
+      if cell.exists and cell.goal:
+        cell.exists = False
+        cell.goal = False
+      elif cell.exists:
+        cell.goal = True
+      else:
+        cell.exists = True
+        cell.goal = True
+    else:
+      cell.exists = not cell.exists
+      cell.goal = False
+      
     self.set_edges()
 
   def draw(self, screen):

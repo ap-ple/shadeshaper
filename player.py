@@ -4,13 +4,15 @@ from tools import import_frames
 
 class Player(pygame.sprite.Sprite):
 
-  def __init__(self, pos):
+  def __init__(self, position):
 
     super().__init__()
 
     self.animations = {"idle": [], "run": [], "jump": [], "fall": []}
     self.frame = 0
     self.animation_speed = 0.1
+
+    self.goal = False
 
     for animation in self.animations.keys():
       self.animations[animation] = import_frames("assets/character/" + animation)
@@ -19,7 +21,7 @@ class Player(pygame.sprite.Sprite):
     self.size = 64
     self.image_x_offset = 13
     self.image_y_offset = 13
-    self.body = pygame.Rect(*pos, self.size - (self.image_x_offset * 2), self.size - self.image_y_offset)
+    self.body = pygame.Rect(*position, self.size - (self.image_x_offset * 2), self.size - self.image_y_offset)
     self.direction = 1
 
     self.run_keys = {pygame.K_a: -1, pygame.K_d: 1}
@@ -78,6 +80,8 @@ class Player(pygame.sprite.Sprite):
         if self.body.colliderect(cell.body):
           if self.grounded or self.falling:
             self.body.bottom = cell.body.top
+            if cell.goal:
+              self.goal = True
             return "top"
           elif not self.grounded:
             self.body.top = cell.body.bottom
