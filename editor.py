@@ -20,7 +20,7 @@ You can also save the current map by pressing M, and a prompt will come up in th
   screen = pygame.display.set_mode((WIDTH, HEIGHT))
   pygame.display.set_caption('Shadeshaper editor')
   
-  with open("levels/level_3.lvl", "r") as file:
+  with open("levels/title.lvl", "r") as file:
     tile_map = file.readlines()
 
   world = World(WIDTH, HEIGHT, 30, tile_map)
