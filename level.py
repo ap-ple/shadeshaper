@@ -7,6 +7,8 @@ from player import Player
 from world import World
 from light import Light
 
+font = pygame.font.Font("freesansbold.ttf", 24)
+
 X = 0
 Y = 1
 
@@ -59,15 +61,25 @@ class Level:
         player.draw(game)
 
         if self.name == "title":
-          font = pygame.font.Font("freesansbold.ttf", 24)
           if complete:
             message = "Thank you for playing!"
             message_x = 1550
           else:
+            if not light.exists:
+              tooltip = "Hold left click"
+              tooltip_offset = 200
+            else:
+              tooltip = "A, D, and Space to move"
+              tooltip_offset = 330
+
+            tip = font.render(tooltip, True, "black")
+            mouse_position = pygame.mouse.get_pos()
+            game.blit(tip, (mouse_position[X] - tooltip_offset, mouse_position[Y] - 20))
+
             message = "Left click to place light, A and D to move, space to jump, and R to restart"
             message_x = 1000
-          text = font.render(message, True, "black")
-          game.blit(text, (message_x, 90))
+            
+          game.blit(font.render(message, True, "black"), (message_x, 90))
 
         frame = pygame.transform.scale(game, (screen_width, screen_height))
         screen.blit(frame, frame.get_rect())
