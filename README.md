@@ -1,2 +1,29 @@
 # Shadeshaper
-Python 3.11 (or higher) and the `Pygame` library are required to run the game. Visit the [Python downloads](https://www.python.org/downloads/ "Download Python") page to install Python, and use the command `pip install pygame` to install Pygame. Once installed, run `main.pyw` or `run_game.py` (there is also an `editor.py` where you can create levels). Use `A` and `D` to move left and right (respectively), `SPACE` to jump, and right click to place the light source. The goal is to reach the green platforms without touching the light.
+Pyweek 35 "In the shadows"
+A solo entry by ncrohawk (ap-ple)
+
+Requirements:
+Python 3.11
+`pip install pygame`
+`pip install shapely`
+
+Running the game:
+You can use `run_game.py` to run the game with a console, or `main.pyw` to run without one. You can also run `editor.py` to enter the editor, where you can design and save custom levels.
+
+Controls:
+`A`: Move left
+`D`: Move right
+`R`: Restart level
+`SPACE`: Jump
+`left mouse` (hold): Move the light
+
+(editor) `M`: Save current level (prompt will appear in console)
+(editor) `left mouse` (click): Toggle tile
+(editor) `middle mouse` (click): Toggle goal tile
+(editor) `right mouse` (click): Place the light
+
+Gameplay:
+Place the light source and make it to the green platforms without touching the light.
+Land on the green platforms to teleport between levels.
+The light cannot be placed near tiles.
+Have fun!
