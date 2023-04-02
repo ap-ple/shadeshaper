@@ -37,10 +37,10 @@ You can also save the current map by pressing M, and a prompt will come up in th
       elif event.type == pygame.MOUSEBUTTONDOWN:
         mouse_position = pygame.mouse.get_pos()
         if event.button == 1: # lmb
-          light = Light(exists=False)
+          light = Light(position=(0, 0), exists=False)
           world.toggle_cell(mouse_position)
         elif event.button == 2: # mmb
-          light = Light(exists=False)
+          light = Light(position=(0, 0), exists=False)
           world.toggle_cell(mouse_position, goal=True)
         elif event.button == 3: # rmb
           light = Light(world, mouse_position)

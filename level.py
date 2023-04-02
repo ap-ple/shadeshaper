@@ -1,9 +1,14 @@
 import pygame
 import sys
 
+pygame.init()
+
 from player import Player
 from world import World
 from light import Light
+
+X = 0
+Y = 1
 
 class Level:
 
@@ -14,14 +19,15 @@ class Level:
 
     self.name = name
 
-  def play(self, screen, screen_width, screen_height):
+  def play(self, screen, screen_width, screen_height, complete=False):
 
     player = Player((0, 0))
 
     while not player.goal_reached:
-      world = World(screen_width, screen_height, 30, self.tile_map)
+      game = pygame.Surface((1920, 1080))
+      world = World(1920, 1080, 30, self.tile_map)
       player = Player(world.player_position)
-      light = Light(exists=False)
+      light = Light(position=(0, 0), exists=False)
       clock = pygame.time.Clock()
 
       while not player.failed and not player.goal_reached:
@@ -40,28 +46,40 @@ class Level:
           mouse_pressed = pygame.mouse.get_pressed()
           if mouse_pressed[0]: #lmb
             mouse_position = pygame.mouse.get_pos()
-            light = Light(world, mouse_position)
+            corrected_mouse_position = (int(1920 / screen_width * mouse_position[X]), int(1080 / screen_height * mouse_position[Y]))
+            light = Light(world, corrected_mouse_position)
         else:
           player.move(world, light)
           player.animate()
 
         # update frame
-        screen.fill("grey")
-        light.draw(screen)
-        world.draw(screen)
-        player.draw(screen)
+        game.fill("grey")
+        light.draw(game)
+        world.draw(game)
+        player.draw(game)
+
+        if self.name == "title":
+          font = pygame.font.Font("freesansbold.ttf", 24)
+          if complete:
+            message = "Thank you for playing!"
+            message_x = 1550
+          else:
+            message = "Left click to place light, A and D to move, space to jump, and R to restart"
+            message_x = 1000
+          text = font.render(message, True, "black")
+          game.blit(text, (message_x, 90))
+
+        frame = pygame.transform.scale(game, (screen_width, screen_height))
+        screen.blit(frame, frame.get_rect())
+        pygame.display.flip()
         pygame.display.update()
 
         # update clock
         clock.tick(60)
 
-    if self.name == "title":
-      if player.body.x < 700:
-        goal = "level_1"
-      elif player.body.x < 1600:
-        goal = "level_3"
-      else:
-        goal = "level_2"
-      Level(goal).play(screen, screen_width, screen_height)
-    else:
-      Level("title").play(screen, screen_width, screen_height)
+    levels = {"title": "level_1",
+              "level_1": "level_2",
+              "level_2": "level_3",
+              "level_3": "title",}
+
+    Level(levels[self.name]).play(screen, screen_width, screen_height, True)

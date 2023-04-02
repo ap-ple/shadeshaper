@@ -9,7 +9,8 @@ class Light:
   def __init__(self, world=None, position=None, exists=True):
     
     self.exists = exists
-    
+    self.position = position
+
     if self.exists:
       for cell in world.cells:
         if cell.exists:
@@ -20,13 +21,14 @@ class Light:
               break
       else:
         self.points = world.calculate_light(position)
-        self.position = position
-        self.image = pygame.image.load("assets/light/light.png")
+        self.image = pygame.image.load("assets/light/light_on.png")
     if not self.exists:
-      self.points = ()    
+      self.image = pygame.image.load("assets/light/light_off.png")
+      self.points = ()
 
   def draw(self, screen):
 
     if self.exists:
       pygame.draw.polygon(screen, "white", self.points)
-      screen.blit(self.image, (self.position[X] - 32, self.position[Y] - 32))
+    
+    screen.blit(self.image, (self.position[X] - 32, self.position[Y] - 32))
