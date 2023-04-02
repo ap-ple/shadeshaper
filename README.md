@@ -4,8 +4,9 @@ A solo entry by ncrohawk (ap-ple)
 
 # Requirements  
 Python 3.11  
-`pip install pygame`  
-`pip install shapely`  
+pygame  
+shapely  
+You can install the required packages using `pip install -r requirements.txt`.  
 
 # Running the game  
 You can use `run_game.py` to run the game with a console, or `main.pyw` to run without one. You can also run `editor.py` to enter the editor, where you can design and save custom levels.  
