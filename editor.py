@@ -23,9 +23,9 @@ You can also save the current map by pressing M, and a prompt will come up in th
   with open("levels/level_3.lvl", "r") as file:
     tile_map = file.readlines()
 
-  world = World(WIDTH, HEIGHT, 30, )#tile_map)
+  world = World(WIDTH, HEIGHT, 30, tile_map)
   player = Player(world.player_position)
-  light = None
+  light = Light(exists=False)
   clock = pygame.time.Clock()
 
   while True:
@@ -37,13 +37,13 @@ You can also save the current map by pressing M, and a prompt will come up in th
       elif event.type == pygame.MOUSEBUTTONDOWN:
         mouse_position = pygame.mouse.get_pos()
         if event.button == 1: # lmb
-          light = None
+          light = Light(exists=False)
           world.toggle_cell(mouse_position)
         elif event.button == 2: # mmb
-          light = None
+          light = Light(exists=False)
           world.toggle_cell(mouse_position, goal=True)
         elif event.button == 3: # rmb
-          light = Light(mouse_position, world.calculate_light(mouse_position), "white")
+          light = Light(world, mouse_position)
 
     # inputs
     keys_pressed = pygame.key.get_pressed()
@@ -65,16 +65,12 @@ You can also save the current map by pressing M, and a prompt will come up in th
       print("Level saved.")
 
     # movement
-    player.move(world)
+    player.move(world, Light(exists=False))
     player.animate()
-
-    if player.goal:
-      pass
 
     # update frame
     screen.fill("grey")
-    if light is not None:
-      light.draw(screen)
+    light.draw(screen)
     world.draw(screen)
     player.draw(screen)
     pygame.display.update()

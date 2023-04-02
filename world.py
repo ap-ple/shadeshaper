@@ -73,7 +73,7 @@ class World:
           if tile == "G":
             cell.goal = True
           elif tile == "P":
-            self.player_position = (cell.position[X], cell.position[Y] - 50)
+            self.player_position = (cell.position[X], cell.position[Y] - 64)
 
     self.set_edges()
 

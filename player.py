@@ -1,6 +1,6 @@
 import pygame
 import os
-from tools import import_frames
+from tools import import_frames, rect_inside_polygon
 
 class Player(pygame.sprite.Sprite):
 
@@ -8,16 +8,20 @@ class Player(pygame.sprite.Sprite):
 
     super().__init__()
 
-    self.animations = {"idle": [], "run": [], "jump": [], "fall": []}
+    self.animations = {"idle": [], "fading":[], "running": [], "jumping": [], "falling": []}
     self.frame = 0
     self.animation_speed = 0.1
 
-    self.goal = False
+    self.goal_reached = False
+    self.fading = False
+    self.failed = False
+    self.moved = False
 
     for animation in self.animations.keys():
       self.animations[animation] = import_frames("assets/character/" + animation)
     
-    self.image = self.animations["idle"][self.frame]
+    self.animation = self.animations["idle"]
+    self.image = self.animation[self.frame]
     self.size = 64
     self.image_x_offset = 13
     self.image_y_offset = 13
@@ -47,19 +51,24 @@ class Player(pygame.sprite.Sprite):
 
   def check_inputs(self, keys_pressed):
 
-    # run inputs
-    run_current_speed = self.run_speed * 1
-    for key, direction in self.run_keys.items():
-      if keys_pressed[key]:
-        self.direction = direction
-        self.run_speed += (self.run_max_speed - abs(run_current_speed)) * self.run_accel * self.direction
-    # jump input
-    if self.jump_timer > 0:
-      self.jump_timer -= 1
-    elif self.grounded:
-      if keys_pressed[self.jump_key]:
-        self.grounded = False
-        self.jump_speed = self.jump_power * 1
+    if not self.fading:
+      # run inputs
+      if keys_pressed[pygame.K_r]:
+        self.failed = True
+      run_current_speed = self.run_speed
+      for key, direction in self.run_keys.items():
+        if keys_pressed[key]:
+          self.moved = True
+          self.direction = direction
+          self.run_speed += (self.run_max_speed - abs(run_current_speed)) * self.run_accel * self.direction
+      # jump input
+      if self.jump_timer > 0:
+        self.jump_timer -= 1
+      elif self.grounded:
+        if keys_pressed[self.jump_key]:
+          self.moved = True
+          self.grounded = False
+          self.jump_speed = self.jump_power
 
   def horizontal_collide(self, world):
 
@@ -81,55 +90,72 @@ class Player(pygame.sprite.Sprite):
           if self.grounded or self.falling:
             self.body.bottom = cell.body.top
             if cell.goal:
-              self.goal = True
+              self.goal_reached = True
             return "top"
           elif not self.grounded:
             self.body.top = cell.body.bottom
             self.jump_timer = 20
             return "bottom"
 
-  def move(self, world):
+  def move(self, world, light):
 
-    # running
-    if abs(self.run_speed) > self.run_min_speed:
-      self.body.x += self.run_speed
-      self.horizontal_collide(world)  
-    self.run_speed *= self.run_decel
+    if not self.fading:
+      # running
+      if abs(self.run_speed) > self.run_min_speed:
+        self.body.x += self.run_speed
+        self.horizontal_collide(world)  
+      self.run_speed *= self.run_decel
 
-    # fell off platform
-    self.body.y += 1
-    if self.grounded and self.vertical_collide(world) != "top":
-      self.falling = True
-      self.grounded = False
-      self.fall_speed = self.fall_start_speed * 1
-
-    # jumping
-    if not self.falling and not self.grounded:
-      self.body.y -= self.jump_speed * self.jump_accel
-      self.jump_speed *= 1 - self.jump_accel
-      
-      if self.jump_speed < self.jump_apex or self.vertical_collide(world) == "bottom":
+      # fell off platform
+      self.body.y += 1
+      if self.grounded and self.vertical_collide(world) != "top":
         self.falling = True
-        self.fall_speed = self.fall_start_speed * 1
+        self.grounded = False
+        self.fall_speed = self.fall_start_speed
 
-    # falling
-    if self.falling:
-      self.body.y += self.fall_speed
-      self.fall_speed *= self.fall_accel
-      if self.fall_speed > self.fall_max_speed:
-        self.fall_speed = self.fall_max_speed * 1
-      if self.vertical_collide(world) == "top":
-        self.falling = False
-        self.grounded = True
+      # jumping
+      if not self.falling and not self.grounded:
+        self.body.y -= self.jump_speed * self.jump_accel
+        self.jump_speed *= 1 - self.jump_accel
+        
+        if self.jump_speed < self.jump_apex or self.vertical_collide(world) == "bottom":
+          self.falling = True
+          self.fall_speed = self.fall_start_speed
+
+      # falling
+      if self.falling:
+        self.body.y += self.fall_speed
+        self.fall_speed *= self.fall_accel
+        if self.fall_speed > self.fall_max_speed:
+          self.fall_speed = self.fall_max_speed
+        if self.vertical_collide(world) == "top":
+          self.falling = False
+          self.grounded = True
+
+      if rect_inside_polygon(self.body, light.points):
+        self.fading = True
 
   def animate(self):
-    animation = self.animations["idle"]
+    if self.fading:
+      if self.animation != self.animations["fading"]:
+        self.animation = self.animations["fading"]
+        self.animation_speed = 0.2
+        self.frame = 0
+    elif abs(self.run_speed) < self.run_min_speed:
+      if self.animation != self.animations["idle"]:
+        self.animation = self.animations["idle"]
+        self.animation_speed = 0.1
+        self.frame = 0
 
     self.frame += self.animation_speed
-    if self.frame >= len(animation):
-      self.frame = 0
+    if self.frame >= len(self.animation):
+      if self.fading:
+        self.failed = True
+        self.frame -= self.animation_speed
+      else:
+        self.frame = 0
 
-    image = animation[int(self.frame)]
+    image = self.animation[int(self.frame)]
 
     if self.direction < 0:
       image = pygame.transform.flip(image, True, False)
