@@ -25,7 +25,7 @@ You can also save the current map by pressing M, and a prompt will come up in th
 
   world = World(WIDTH, HEIGHT, 30, tile_map)
   player = Player(world.player_position)
-  light = Light(exists=False)
+  light = Light(world, exists=False)
   clock = pygame.time.Clock()
 
   while True:
@@ -37,10 +37,10 @@ You can also save the current map by pressing M, and a prompt will come up in th
       elif event.type == pygame.MOUSEBUTTONDOWN:
         mouse_position = pygame.mouse.get_pos()
         if event.button == 1: # lmb
-          light = Light(position=(0, 0), exists=False)
+          light = Light(world, exists=False)
           world.toggle_cell(mouse_position)
         elif event.button == 2: # mmb
-          light = Light(position=(0, 0), exists=False)
+          light = Light(world, exists=False)
           world.toggle_cell(mouse_position, goal=True)
         elif event.button == 3: # rmb
           light = Light(world, mouse_position)
@@ -65,7 +65,7 @@ You can also save the current map by pressing M, and a prompt will come up in th
       print("Level saved.")
 
     # movement
-    player.move(world, Light(exists=False))
+    player.move(world, Light(world, exists=False))
     player.animate()
 
     # update frame

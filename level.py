@@ -29,7 +29,7 @@ class Level:
       game = pygame.Surface((1920, 1080))
       world = World(1920, 1080, 30, self.tile_map)
       player = Player(world.player_position)
-      light = Light(position=(0, 0), exists=False)
+      light = Light(world, exists=False)
       clock = pygame.time.Clock()
 
       while not player.failed and not player.goal_reached:

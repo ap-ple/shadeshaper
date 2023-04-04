@@ -6,10 +6,12 @@ Y = 1
 
 class Light:
 
-  def __init__(self, world=None, position=None, exists=True):
+  def __init__(self, world, position=None, exists=True):
     
     self.exists = exists
     self.position = position
+    if self.position is None:
+      self.position = (world.width * world.block_size + 32, world.height * world.block_size + 32)
 
     if self.exists:
       for cell in world.cells:
